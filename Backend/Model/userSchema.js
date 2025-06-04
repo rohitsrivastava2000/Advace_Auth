@@ -34,7 +34,12 @@ const userSchema=mongoose.Schema({
     resetOtpExpiredAt:{
         type:Number,
         default:0,
-    }
+    },
+    createdAt: {
+    type: Date,
+    default: Date.now,
+    expires: 120, // ⏱️ Delete after 15min if not updated
+  },
 })
 
 const userModel= mongoose.models.User ||  mongoose.model('User',userSchema);

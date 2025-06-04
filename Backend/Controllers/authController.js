@@ -34,15 +34,37 @@ export const register = async (req, res) => {
       });
     }
 
+
+    //Sending the verification otp
+    let otpCode = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+    //Sending mail
+    const mailOption = {
+      email: email,
+      title: "Email Verification, OTP Expire within 1 hour",
+      body: otpCode,
+    };
+
+    await mailSender(mailOption);
+
     const hashPassword = await bcrypt.hash(password, 10);
 
     const userData = new User({
       userName,
       email,
       password: hashPassword,
+      verifyOtp:otpCode,
+      verifyOtpExpireAt:Date.now()+1*60*60*1000
     });
 
-    await userData.save();
+    
+    
+    await userData.save();  
+
+
 
     const token = jwt.sign({ id: userData._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: "7d",
@@ -60,7 +82,7 @@ export const register = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "User Register Successfully",
+      message: "OTP Send Successfully",
     });
   } catch (error) {
     res.status(500).json({
@@ -141,51 +163,51 @@ export const logout = async (req, res) => {
 };
 
 //sending verification otp
-export const sendVerifyOtp = async (req, res) => {
-  try {
-    const { userId } = req.body;
+// export const sendVerifyOtp = async (req, res) => {
+//   try {
+//     const { userId } = req.body;
 
-    const user = await User.findById(userId); //I thing some written wrong on this line
+//     const user = await User.findById(userId); //I thing some written wrong on this line
 
-    if (user.isAccountVerified) {
-      return res.status(406).json({
-        success: false,
-        message: "Account Already Verified",
-      });
-    }
+//     if (user.isAccountVerified) {
+//       return res.status(406).json({
+//         success: false,
+//         message: "Account Already Verified",
+//       });
+//     }
 
-    let otpCode = otpGenerator.generate(6, {
-      upperCaseAlphabets: false,
-      lowerCaseAlphabets: false,
-      specialChars: false,
-    });
+//     let otpCode = otpGenerator.generate(6, {
+//       upperCaseAlphabets: false,
+//       lowerCaseAlphabets: false,
+//       specialChars: false,
+//     });
 
-    user.verifyOtp=otpCode;
-    user.verifyOtpExpireAt=Date.now()+1*60*60*1000;
+//     user.verifyOtp=otpCode;
+//     user.verifyOtpExpireAt=Date.now()+1*60*60*1000;
 
-    await user.save();
+//     await user.save();
 
-    //Sending mail
-    const mailOption = {
-      email: user.email,
-      title: "Email Verification, OTP Expire within 1 hour",
-      body: otpCode,
-    };
+//     //Sending mail
+//     const mailOption = {
+//       email: user.email,
+//       title: "Email Verification, OTP Expire within 1 hour",
+//       body: otpCode,
+//     };
 
-    await mailSender(mailOption);
+//     await mailSender(mailOption);
 
-    res.status(200).json({
-      success:true,
-      message:"OTP Send Successfully"
-    })
+//     res.status(200).json({
+//       success:true,
+//       message:"OTP Send Successfully"
+//     })
 
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Internal Server Error on sendVerifyOtp",
-    });
-  }
-};
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: "Internal Server Error on sendVerifyOtp",
+//     });
+//   }
+// };
 
 //verify otp
 export const verifyEmail=async(req,res)=>{
@@ -222,12 +244,13 @@ export const verifyEmail=async(req,res)=>{
     user.isAccountVerified=true;
     user.verifyOtp='';
     user.verifyOtpExpireAt=0;
+    user.createdAt=undefined;
 
     await user.save();
 
     return res.status(200).json({
       success:true,
-      message:"Email Verified Successfully"
+      message:"User Signup Successfully"
     })
 
   } catch (error) {
@@ -241,9 +264,27 @@ export const verifyEmail=async(req,res)=>{
 //check user is authenticated or not
 export const isAuthenticated=async(req,res)=>{
   try {
-    return res.status(200).json({
-      success:true
+    const {userId}=req.body
+
+    const user=await User.findById(userId);
+    if(!user){
+      return res.status(402).json({
+        success:false,
+        message:"User Not Found"
+      })
+    }
+
+    if(user.isAccountVerified){
+      return res.status(200).json({
+        success:true
+      })
+
+    }
+    return res.status(403).json({
+      success:false,
+      message:"User is not Authorized"
     })
+
   } catch (error) {
     return res.status(500).json({
       success:false,
