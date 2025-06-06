@@ -2,6 +2,7 @@ import axios from 'axios'
 import React, { useRef, useState } from 'react'
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import {notify} from '../toastify.js'
 
 function VerifyOTP() {
   const [otp, setOtp] = useState(new Array(6).fill(""))
@@ -50,11 +51,14 @@ function VerifyOTP() {
       // console.log(response.data);
       if(response.data.success){
         //TODO Add Toast
+        notify(response.data)
         console.log("hi")
         setTimeout(()=>navigate('/login'),1000)
       }
+      
 
     } catch (error) {
+      notify(error.response?.data);
       console.log(error);
     }
   }

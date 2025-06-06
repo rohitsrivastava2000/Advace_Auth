@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { createUser } from '../Features/userDetailSlice'
 import axios from 'axios'
+import {notify} from '../toastify.js'
 
 function Signup() {
   const [username, setUserName] = useState("")
@@ -33,10 +34,12 @@ function Signup() {
       const response=await axios.post(baseUrl+'/auth/register',handleData,{withCredentials:true});
       console.log(response.data);
       if(response.data.success){
-        // TODO:show Toast message
+        
+        notify(response.data)
         setTimeout(()=>navigate('/verify-otp'),2000);
       }
     } catch (error) {
+      notify(error.response?.data);
       console.log(error.data);
     }
   }

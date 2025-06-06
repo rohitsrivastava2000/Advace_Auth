@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useRef,useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import {notify} from '../toastify.js'
 
 function ResetEmail() {
   const [email, setEmail] = useState("");
@@ -51,10 +52,12 @@ function ResetEmail() {
         console.log(response.data);
         if(response.data.success){
           //TODO add toast
+          notify(response.data)
           setIsEmail(true)
         }
         
       } catch (error) {
+        notify(error.response?.data);
         console.log(error);
       }
     }
@@ -81,11 +84,13 @@ function ResetEmail() {
         console.log(response.data);
         if(response.data.success){
           //TODO add toast
+          notify(response.data)
           setIsPassword(true)
           setTimeout(()=>navigate('/login'),1000);
         }
         
       } catch (error) {
+        notify(error.response?.data);
         console.log(error);
       }
     }

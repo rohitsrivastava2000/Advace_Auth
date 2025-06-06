@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import {notify} from '../toastify.js'
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -15,10 +16,12 @@ function Login() {
       const response=await axios.post(baseUrl+'/auth/login',{email,password},{withCredentials:true})
       console.log(response.data);
       if(response.data.success){
-        //TODO Add Toast
+       
+        notify(response.data)
         setTimeout(()=>navigate('/'),2000);
       }
     } catch (error) {
+      notify(error.response?.data);
       console.log(error.response?.data)
     }
 

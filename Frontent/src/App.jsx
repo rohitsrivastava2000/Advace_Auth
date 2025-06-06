@@ -6,7 +6,7 @@ import VerifyOTP from './pages/verifyOTP'
 import Login from './pages/Login'
 import ResetEmail from './pages/ResetEmail'
 import Home from './pages/Home'
-
+  import { ToastContainer} from 'react-toastify';
 
 function App() {
   
@@ -21,6 +21,7 @@ function App() {
       <Route path='/forgot-password' element={<ResetEmail/>} />
       
       </Routes>
+      <ToastContainer/>
     </div>
   )
 }
