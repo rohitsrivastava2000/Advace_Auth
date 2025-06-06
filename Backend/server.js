@@ -12,7 +12,10 @@ const port=process.env.PORT || 4000;
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({credentials:true}));
+app.use(cors({
+  origin: 'http://localhost:5173', // your frontend domain
+  credentials: true                //  Allow cookies to be sent
+}));
 
 app.get('/',(req,res)=>{
     res.send(`Server is started at port ${port}`);
