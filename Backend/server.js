@@ -5,6 +5,8 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import db from './Configs/dbConnection.js'
 import authRoute from './Routes/authRoute.js';
+import userRoute from './Routes/userRoute.js';
+
 
 const app=express();
 const port=process.env.PORT || 4000;
@@ -21,6 +23,7 @@ app.get('/',(req,res)=>{
     res.send(`Server is started at port ${port}`);
 })
 app.use('/api/auth',authRoute);
+app.use('/api/user',userRoute);
 
 app.listen(port,()=>{
      console.log(`Server is started at ${port}`)

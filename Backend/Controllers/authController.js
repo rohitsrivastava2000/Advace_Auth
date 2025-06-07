@@ -208,7 +208,8 @@ export const logout = async (req, res) => {
 //verify otp
 export const verifyEmail = async (req, res) => {
   try {
-    const { userId, otp } = req.body;
+    const { otp } = req.body;
+    const userId=req.userId;
 
     if (!userId || !otp) {
       return res.status(400).json({
@@ -263,25 +264,9 @@ export const verifyEmail = async (req, res) => {
 //check user is authenticated or not
 export const isAuthenticated = async (req, res) => {
   try {
-    const { userId } = req.body;
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(402).json({
-        success: false,
-        message: "User Not Found",
-      });
-    }
-
-    if (user.isAccountVerified) {
-      return res.status(200).json({
-        success: true,
-      });
-    }
-    return res.status(403).json({
-      success: false,
-      message: "User is not Authorized",
-    });
+    return res.status(200).json({
+      success:true
+    })
   } catch (error) {
     return res.status(500).json({
       success: false,

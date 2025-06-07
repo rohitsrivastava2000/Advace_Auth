@@ -1,14 +1,16 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {notify} from '../toastify.js'
+// import { createUser } from "../Features/userDetailSlice.js";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const baseUrl=useSelector((state)=>state.app.baseURL);
+ // const dispatch = useDispatch();
   const handleLoginForm =async (e) => {
     e.preventDefault();
     try {
@@ -16,8 +18,10 @@ function Login() {
       const response=await axios.post(baseUrl+'/auth/login',{email,password},{withCredentials:true})
       console.log(response.data);
       if(response.data.success){
-       
+       //dispatch(createUser());
+
         notify(response.data)
+        
         setTimeout(()=>navigate('/'),2000);
       }
     } catch (error) {
