@@ -6,7 +6,7 @@ import VerifyOTP from './pages/verifyOTP'
 import Login from './pages/Login'
 import ResetEmail from './pages/ResetEmail'
 import Home from './pages/Home'
-  import { ToastContainer} from 'react-toastify';
+import { ToastContainer} from 'react-toastify';
 import Profile from './Component/Profile'
 import PrivateRoute from './PrivateRoute'
 

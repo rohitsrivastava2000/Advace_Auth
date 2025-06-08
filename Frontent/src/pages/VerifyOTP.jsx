@@ -7,6 +7,7 @@ import {notify} from '../toastify.js'
 function VerifyOTP() {
   const [otp, setOtp] = useState(new Array(6).fill(""))
   const inputsRef = useRef([])
+const [isSubmitting, setIsSubmitting] = useState(false);
 
   const baseUrl=useSelector((state)=>state.app.baseURL);
 
@@ -42,6 +43,7 @@ function VerifyOTP() {
     const finalOtp = otp.join("")
     console.log("OTP entered:", finalOtp)
     // API call to verify finalOtp
+setIsSubmitting(true); // Start loading
 
     try {
       const response=await axios.post(baseUrl+'/auth/verify-account',{otp:finalOtp},{
@@ -60,7 +62,9 @@ function VerifyOTP() {
     } catch (error) {
       notify(error.response?.data);
       console.log(error);
-    }
+    }finally {
+    setIsSubmitting(false); // Stop loading
+  }
   }
 
   return (
@@ -91,11 +95,14 @@ function VerifyOTP() {
         </div>
 
         <button
-          type="submit"
-          className="w-full bg-[rgb(108,99,255)] hover:bg-[rgb(86,79,204)] text-white font-semibold py-2 rounded-lg transition duration-300"
-        >
-          Verify OTP
-        </button>
+  type="submit"
+  disabled={isSubmitting}
+  className={`w-full cursor-pointer ${
+    isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[rgb(108,99,255)] hover:bg-[rgb(86,79,204)]"
+  } text-white font-semibold py-2 rounded-lg transition duration-300`}
+>
+  {isSubmitting ? "Verifying..." : "Verify OTP"}
+</button>
       </form>
     </div>
   )

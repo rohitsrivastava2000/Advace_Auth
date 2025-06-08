@@ -1,8 +1,8 @@
 import axios from "axios";
-import React, { useRef,useState } from "react";
+import React, { useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {notify} from '../toastify.js'
+import { notify } from "../toastify.js";
 
 function ResetEmail() {
   const [email, setEmail] = useState("");
@@ -10,12 +10,14 @@ function ResetEmail() {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const inputsRef = useRef([]);
 
+  const [isStrong, setIsStrong] = useState(false);
   const [isEmail, setIsEmail] = useState(false);
   const [isOTP, setIsOTP] = useState(false);
   const [isPassword, setIsPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const baseUrl=useSelector((state)=>state.app.baseURL);
-  const navigate=useNavigate();
+  const baseUrl = useSelector((state) => state.app.baseURL);
+  const navigate = useNavigate();
 
   const handleChange = (e, index) => {
     const value = e.target.value;
@@ -42,26 +44,47 @@ function ResetEmail() {
     }
   };
 
-  const handleForgetPassword =async (e) => {
+  const isValidPassword = (password) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const handlePassword = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword); // Set the new value
+
+    if (isValidPassword(newPassword)) {
+      setIsStrong(true);
+    } else {
+      setIsStrong(false);
+    }
+  };
+
+  const handleForgetPassword = async (e) => {
     e.preventDefault();
-    
+
     // // API call to verify finalOtp
-    if(!isEmail){
+    if (!isEmail) {
+      setIsSubmitting(true); // Start loading
       try {
-        const response=await axios.post(baseUrl+'/auth/send-reset-otp',{email},{withCredentials:true});
+        const response = await axios.post(
+          baseUrl + "/auth/send-reset-otp",
+          { email },
+          { withCredentials: true }
+        );
         console.log(response.data);
-        if(response.data.success){
+        if (response.data.success) {
           //TODO add toast
-          notify(response.data)
-          setIsEmail(true)
+          notify(response.data);
+          setIsEmail(true);
         }
-        
       } catch (error) {
         notify(error.response?.data);
         console.log(error);
+      } finally {
+        setIsSubmitting(false); // Stop loading
       }
-    }
-    else if(!isOTP){
+    } else if (!isOTP) {
       setIsOTP(true);
       // const finalOtp = otp.join("");
       // console.log("OTP entered:", finalOtp);
@@ -72,26 +95,39 @@ function ResetEmail() {
       //     //TODO add toast
       //     setIsOTP(true)
       //   }
-        
+
       // } catch (error) {
       //   console.log(error);
       // }
-    }
-    else if(!isPassword){
+    } else if (!isPassword) {
       const finalOtp = otp.join("");
+      setIsSubmitting(true); // Start loading
+
+      if (!isStrong) {
+        notify({
+          success: false,
+          message: "Make Strong Password",
+        });
+        return;
+      }
       try {
-        const response=await axios.post(baseUrl+'/auth/reset-password',{email:email,otp:finalOtp,newPassword:password},{withCredentials:true});
+        const response = await axios.post(
+          baseUrl + "/auth/reset-password",
+          { email: email, otp: finalOtp, newPassword: password },
+          { withCredentials: true }
+        );
         console.log(response.data);
-        if(response.data.success){
-          //TODO add toast
-          notify(response.data)
-          setIsPassword(true)
-          setTimeout(()=>navigate('/login'),1000);
+        if (response.data.success) {
+          
+          notify(response.data);
+          setIsPassword(true);
+          setTimeout(() => navigate("/login"), 1000);
         }
-        
       } catch (error) {
         notify(error.response?.data);
         console.log(error);
+      } finally {
+        setIsSubmitting(false); // Stop loading
       }
     }
   };
@@ -132,9 +168,14 @@ function ResetEmail() {
 
             <button
               type="submit"
-              className="w-full bg-[rgb(108,99,255)] hover:bg-[rgb(86,79,204)] text-white font-semibold py-2 rounded-lg transition duration-300"
+              disabled={isSubmitting}
+              className={`w-full cursor-pointer ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[rgb(108,99,255)] hover:bg-[rgb(86,79,204)]"
+              } text-white font-semibold py-2 rounded-lg transition duration-300`}
             >
-              Send OTP
+              {isSubmitting ? "Sending..." : "Send OTP"}
             </button>
           </form>
         </div>
@@ -203,18 +244,35 @@ function ResetEmail() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handlePassword(e)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(108,99,255)]"
                 placeholder="Enter your new password"
                 required
               />
+              {password.length > 0 && !isStrong && (
+                <p className="text-[10px] mt-1 text-red-600">
+                  * Password must be at least 8 characters long and include
+                  uppercase, lowercase, and a special character.
+                </p>
+              )}
+
+              {password.length >= 8 && isStrong && (
+                <p className="text-[10px] mt-1 text-green-600">
+                  ✔ Strong password
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              className="w-full bg-[rgb(108,99,255)] hover:bg-[rgb(86,79,204)] text-white font-semibold py-2 rounded-lg transition duration-300"
+              disabled={isSubmitting}
+              className={`w-full cursor-pointer ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[rgb(108,99,255)] hover:bg-[rgb(86,79,204)]"
+              } text-white font-semibold py-2 rounded-lg transition duration-300`}
             >
-              Update Password
+              {isSubmitting ? "Updating..." : "Update Password"}
             </button>
           </form>
         </div>

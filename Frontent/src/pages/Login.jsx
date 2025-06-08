@@ -8,11 +8,15 @@ import {notify} from '../toastify.js'
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const navigate = useNavigate();
   const baseUrl=useSelector((state)=>state.app.baseURL);
  // const dispatch = useDispatch();
   const handleLoginForm =async (e) => {
     e.preventDefault();
+    setIsSubmitting(true); // Start loading
+
     try {
       console.log("hy")
       const response=await axios.post(baseUrl+'/auth/login',{email,password},{withCredentials:true})
@@ -27,7 +31,9 @@ function Login() {
     } catch (error) {
       notify(error.response?.data);
       console.log(error.response?.data)
-    }
+    }finally {
+    setIsSubmitting(false); // Stop loading
+  }
 
   };
   return (
@@ -79,12 +85,15 @@ function Login() {
         >
           Forgot Password
         </p>
-        <button
-          type="submit"
-          className="w-full bg-[rgb(108,99,255)] hover:bg-[rgb(86,79,204)] text-white font-semibold py-2 rounded-lg transition duration-300"
-        >
-          Login
-        </button>
+       <button
+  type="submit"
+  disabled={isSubmitting}
+  className={`w-full cursor-pointer ${
+    isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[rgb(108,99,255)] hover:bg-[rgb(86,79,204)]"
+  } text-white font-semibold py-2 rounded-lg transition duration-300`}
+>
+  {isSubmitting ? "Verifying..." : "Login"}
+</button>
         <p
           className=" mt-3 hover:text-[rgb(86,79,204)] cursor-pointer text-center "
           onClick={() => navigate("/")}
