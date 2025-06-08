@@ -1,8 +1,9 @@
 import axios from 'axios'
 import React, { useRef, useState } from 'react'
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {notify} from '../toastify.js'
+import { setOtpSend } from '../Features/userDetailSlice.js';
 
 function VerifyOTP() {
   const [otp, setOtp] = useState(new Array(6).fill(""))
@@ -10,7 +11,7 @@ function VerifyOTP() {
 const [isSubmitting, setIsSubmitting] = useState(false);
 
   const baseUrl=useSelector((state)=>state.app.baseURL);
-
+  const dispatch=useDispatch();
   const navigate=useNavigate();
 
   const handleChange = (e, index) => {
@@ -53,6 +54,7 @@ setIsSubmitting(true); // Start loading
       // console.log(response.data);
       if(response.data.success){
         //TODO Add Toast
+        dispatch(setOtpSend(false));
         notify(response.data)
         console.log("hi")
         setTimeout(()=>navigate('/login'),1000)

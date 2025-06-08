@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { createUser } from "../Features/userDetailSlice";
+import { setOtpSend } from "../Features/userDetailSlice";
 import axios from "axios";
 import { notify } from "../toastify.js";
 
@@ -15,7 +15,7 @@ function Signup() {
   const [isStrong, setIsStrong] = useState(false);
 
   const navigate = useNavigate();
-
+  const dispatch=useDispatch();
   const baseUrl = useSelector((state) => state.app.baseURL);
 
   const handleData = {
@@ -65,6 +65,7 @@ function Signup() {
       );
       console.log(response.data);
       if (response.data.success) {
+        dispatch(setOtpSend(true))
         notify(response.data);
         setTimeout(() => navigate("/verify-otp"), 1000);
       }
